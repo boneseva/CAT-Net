@@ -1,14 +1,13 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
-from torchvision_backbones import TVDeeplabRes101Encoder
+from .torchvision_backbones import TVDeeplabRes101Encoder
 
 
 class FewShotSeg(nn.Module):
 
-    def __init__(self, use_coco_init=True,):
+    def __init__(self, use_coco_init=True, ):
         super().__init__()
 
         # Encoder
@@ -51,8 +50,7 @@ class FewShotSeg(nn.Module):
         corr_query_mask = corr_query.unsqueeze(1)
         return corr_query_mask
 
-
-    def forward(self, supp_imgs, fore_mask, qry_imgs, train=False, t_loss_scaler=1,n_iters=0):
+    def forward(self, supp_imgs, fore_mask, qry_imgs, train=False, t_loss_scaler=1, n_iters=0):
         """
         Args:
             supp_imgs: support images
@@ -81,7 +79,6 @@ class FewShotSeg(nn.Module):
         imgs_concat = torch.cat([torch.cat(way, dim=0) for way in supp_imgs]
                                 + [torch.cat(qry_imgs, dim=0), ], dim=0)
         img_fts = self.encoder(imgs_concat, low_level=False)
-
 
         fts_size = img_fts.shape[-2:]
         supp_fts = img_fts[:n_ways * self.n_shots * batch_size].view(
@@ -148,7 +145,7 @@ class FewShotSeg(nn.Module):
             pred = self.getPred(anom_s, self.thresh_pred)  # N x Wa x H' x W'
 
             qry_fts1 = [qry_fts1]
-            fg_prototypes1 =[fg_prototypes]
+            fg_prototypes1 = [fg_prototypes]
             qry_prediction = [torch.stack(
                 [self.getPrediction(qry_fts1[n][epi], fg_prototypes1[n][way], self.thresh_pred[way])
                  for way in range(self.n_ways)], dim=1) for n in range(len(qry_fts1))]  # N x Wa x H' x W'
@@ -164,7 +161,7 @@ class FewShotSeg(nn.Module):
                     [self.getPrediction(qry_fts1[n][epi], fg_prototypes_[n][way], self.thresh_pred[way]) for way in
                      range(self.n_ways)], dim=1) for n in range(len(qry_fts1))]  # N x Wa x H' x W'
             pred_ups = [F.interpolate(qry_prediction[n], size=img_size, mode='bilinear', align_corners=True)
-                           for n in range(len(qry_fts1))]
+                        for n in range(len(qry_fts1))]
 
             pred_ups = F.interpolate(pred, size=img_size, mode='bilinear', align_corners=True)
             pred_ups = torch.cat((1.0 - pred_ups, pred_ups), dim=1)
@@ -180,7 +177,7 @@ class FewShotSeg(nn.Module):
 
         output = torch.stack(outputs, dim=1)  # N x B x (1 + Wa) x H x W
         output = output.view(-1, *output.shape[2:])
-        return output, align_loss / batch_size, #(t_loss_scaler * self.t_loss)
+        return output, align_loss / batch_size,  #(t_loss_scaler * self.t_loss)
 
     def updatePrototype(self, fts, prototype, pred, update_iters, epi):
 
@@ -327,6 +324,7 @@ class FewShotSeg(nn.Module):
 
         return pred
 
+
 class SelfAttention(nn.Module):
     def __init__(self, dim):
         super(SelfAttention, self).__init__()
@@ -337,13 +335,13 @@ class SelfAttention(nn.Module):
         self.mlp = nn.Sequential(
             nn.Linear(dim, dim),
             nn.ReLU(),
-            nn.Linear(dim, dim)
-        self.norm = nn.LayerNorm([dim, dim])
+            nn.Linear(dim, dim))
+        self.norm = nn.LayerNorm((256, 32, 32))
 
     def forward(self, x):
         B, C, H, W = x.shape
         scale = (C // 8) ** -0.5
-        q = self.query(x).view(B, -1, H * W).permute(0, 2, 1) * scale # B, H*W, C'
+        q = self.query(x).view(B, -1, H * W).permute(0, 2, 1) * scale  # B, H*W, C'
         k = self.key(x).view(B, -1, H * W)  # B, C', H*W
         v = self.value(x).view(B, -1, H * W)  # B, C, H*W
         attn = self.softmax(torch.bmm(q, k))  # B, H*W, H*W
@@ -364,7 +362,7 @@ class CrossAttention(nn.Module):
             nn.ReLU(),
             nn.Linear(dim, dim)
         )
-        self.norm = nn.LayerNorm([dim, dim])
+        self.norm = nn.LayerNorm((256, 32, 32))
 
     def forward(self, x, y):
         B, C, H, W = x.shape
@@ -387,4 +385,3 @@ class CrossAttention(nn.Module):
         outy = self.norm(outy)  # Apply normalization
 
         return outx, outy
-

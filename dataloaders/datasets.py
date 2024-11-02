@@ -20,11 +20,11 @@ class TestDataset(Dataset):
 
         # reading the paths
         if args['dataset'] == 'CMR':
-            self.image_dirs = glob.glob(os.path.join(args['data_dir'], 'cmr_MR_normalized/image*'))
+            self.image_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'cmr_MR_normalized/image*')))
         elif args['dataset'] == 'CHAOST2':
-            self.image_dirs = glob.glob(os.path.join(args['data_dir'], 'chaos_MR_T2_normalized/image*'))
+            self.image_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'chaos_MR_T2_normalized/image*')))
         elif args['dataset'] == 'SABS':
-            self.image_dirs = glob.glob(os.path.join(args['data_dir'], 'sabs_CT_normalized/image*'))
+            self.image_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'sabs_CT_normalized/image*')))
 
         self.image_dirs = sorted(self.image_dirs, key=lambda x: int(x.split('_')[-1].split('.nii.gz')[0]))
 
@@ -127,18 +127,20 @@ class TrainDataset(Dataset):
 
         # reading the paths (leaving the reading of images into memory to __getitem__)
         if args['dataset'] == 'CMR':
-            self.image_dirs = glob.glob(os.path.join(args['data_dir'], 'cmr_MR_normalized/image*'))
-            self.label_dirs = glob.glob(os.path.join(args['data_dir'], 'cmr_MR_normalized/label*'))
+            self.image_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'cmr_MR_normalized/image*')))
+            self.label_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'cmr_MR_normalized/label*')))
         elif args['dataset'] == 'CHAOST2':
-            self.image_dirs = glob.glob(os.path.join(args['data_dir'], 'chaos_MR_T2_normalized/image*'))
-            self.label_dirs = glob.glob(os.path.join(args['data_dir'], 'chaos_MR_T2_normalized/label*'))
+            self.image_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'chaos_MR_T2_normalized/image*')))
+            self.label_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'chaos_MR_T2_normalized/label*')))
+            self.sprvxl_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'chaos_MR_T2_normalized/superpix*')))
         elif args['dataset'] == 'SABS':
-            self.image_dirs = glob.glob(os.path.join(args['data_dir'], 'sabs_CT_normalized/image*'))
-            self.label_dirs = glob.glob(os.path.join(args['data_dir'], 'sabs_CT_normalized/label*'))
+            self.image_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'sabs_CT_normalized/image*')))
+            self.label_dirs = glob.glob(os.path.normpath(os.path.join(args['data_dir'], 'sabs_CT_normalized/label*')))
 
         self.image_dirs = sorted(self.image_dirs, key=lambda x: int(x.split('_')[-1].split('.nii.gz')[0]))
         self.label_dirs = sorted(self.label_dirs, key=lambda x: int(x.split('_')[-1].split('.nii.gz')[0]))
-        self.sprvxl_dirs = glob.glob(os.path.join(args['data_dir'], 'supervoxels_' + str(args['n_sv']), 'super*'))
+        # self.sprvxl_dirs = glob.glob(os.path.join(args['data_dir'], 'supervoxels_' + str(args['n_sv']), 'super*'))
+        # self.sprvxl_dirs = sorted(self.sprvxl_dirs, key=lambda x: int(x.split('_')[-1].split('.nii.gz')[0]))
         self.sprvxl_dirs = sorted(self.sprvxl_dirs, key=lambda x: int(x.split('_')[-1].split('.nii.gz')[0]))
 
         # remove test fold!
@@ -324,4 +326,4 @@ class TrainDataset(Dataset):
                  's_padding_mask': s_padding_mask
                   }
 
-        return sup_img, sup_lbl, qry_img, qry_lbl, padding_mask, s_padding_mask
+        return sample

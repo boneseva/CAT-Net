@@ -63,6 +63,7 @@ def cfg():
     save_snapshot_every = 1000
     max_iters_per_load = 1000  # epoch size, interval for reloading the dataset
     alpha=0.9 # dual-scale
+    pretrain_path=r'C:\Users\bonese\Documents\Courses\LRDL\LRDL-project\CAT-Net\resnet101-63fe2227.pth'
     
     # Network
     # reload_model_path =

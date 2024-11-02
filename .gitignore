@@ -3,3 +3,12 @@
 */.vscode
 */figures
 */requirements.txt
+
+wandb/
+runs/
+exps_on_CHAOST2/
+
+__pycache__/
+data/
+
+resnet101-63fe2227.pth

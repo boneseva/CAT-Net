@@ -19,6 +19,8 @@ MAX_ITER=1000 # defines the size of an epoch
 SNAPSHOT_INTERVAL=20000 # interval for saving snapshot
 SEED=2021
 
+PRETRAIN=./resnet101-63fe2227.pth
+
 echo ========================================================================
 
 for EVAL_FOLD in "${ALL_EV[@]}"
@@ -45,5 +47,6 @@ do
   seed=$SEED \
   save_snapshot_every=$SNAPSHOT_INTERVAL \
   lr_step_gamma=$DECAY \
-  path.log_dir=$LOGDIR
+  path.log_dir=$LOGDIR \
+  pretrain_path=$PRETRAIN
 done
